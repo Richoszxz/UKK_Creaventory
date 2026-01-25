@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:creaventory/export.dart';
 import '../../widgets/card_data_peminjaman_widget.dart';
 import 'package:creaventory/screens/admin/tambah_data_peminjaman_screen.dart';
+import 'package:creaventory/screens/admin/detail_data_peminjaman_screen.dart';
+import 'package:creaventory/screens/admin/edit_data_peminjaman_screen.dart';
 
 class ManajemenDataPeminjamanScreen extends StatefulWidget {
   const ManajemenDataPeminjamanScreen({super.key});
@@ -13,18 +15,20 @@ class ManajemenDataPeminjamanScreen extends StatefulWidget {
 
 class _ManajemenDataPeminjamanScreenState
     extends State<ManajemenDataPeminjamanScreen> {
-  final List<Map<String, String>> dummyPeminjaman = [
+  // Di ManajemenDataPeminjamanScreen
+  final List<Map<String, dynamic>> dummyPeminjaman = [
     {
       "kode": "TRX24578965",
       "nama": "Richo Ferdinand",
-      "tglPinjam": "18/01/2026",
-      "tglRencanaKembali": "19/01/2026",
-    },
-    {
-      "kode": "TRX24578966",
-      "nama": "Richa Ferdinyoy",
-      "tglPinjam": "17/01/2026",
-      "tglRencanaKembali": "20/01/2026",
+      "email": "richoferdinand@gmail.com",
+      "tglPinjam": "18 Jan 2026",
+      "tglRencanaKembali": "19 Jan 2026",
+      "status": "Dikembalikan",
+      "petugas": "Petugas 1",
+      "alat": [
+        {"nama": "iPad M3 Pro", "qty": "1", "kondisi": "Baik"},
+        {"nama": "Stylus Pen", "qty": "1", "kondisi": "Baik"},
+      ],
     },
   ];
 
@@ -53,10 +57,23 @@ class _ManajemenDataPeminjamanScreenState
                       tglPinjam: data["tglPinjam"]!,
                       tglRencanaKembali: data["tglRencanaKembali"]!,
                       onDetail: () {
-                        debugPrint("Detail ${data["kode"]}");
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            // Mengirimkan variabel 'data' (item dari ListView) ke screen Detail
+                            builder: (context) =>
+                                DetailPeminjamanScreen(data: data),
+                          ),
+                        );
                       },
                       onEdit: () {
-                        debugPrint("Edit ${data["kode"]}");
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                EditDataPeminjamanScreen(data: data),
+                          ),
+                        );
                       },
                       onDelete: () {
                         debugPrint("Delete ${data["kode"]}");

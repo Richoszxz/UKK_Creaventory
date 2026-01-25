@@ -20,6 +20,8 @@ import 'screens/admin/tambah_kategori_screen.dart';
 import 'screens/admin/edit_kategori_screen.dart';
 import 'screens/petugas/cetak_kartu_peminjaman_screen.dart';
 import 'screens/peminjam/keranjang_peminjaman_screen.dart';
+import 'screens/log_aktivitas_screen.dart';
+import 'screens/profil_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -80,7 +82,9 @@ class MyApp extends StatelessWidget {
         '/tambah_kategori': (context) => TambahKategoriScreen(),
         '/edit_kategori': (context) => EditKategoriScreen(),
         '/cetak_kartu_peminjaman': (context) => CetakKartuPeminjamanScreen(),
-        '/keranjang_peminjaman': (context) => KeranjangPeminjamanScreen()
+        '/keranjang_peminjaman': (context) => KeranjangPeminjamanScreen(),
+        '/log_aktivitas': (context) => LogAktivitasScreen(),
+        '/profil': (context) => ProfilScreen()
       },
     );
   }

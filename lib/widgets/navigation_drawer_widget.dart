@@ -43,7 +43,7 @@ class _NavigationDrawerWidgetState extends State<NavigationDrawerWidget> {
                       ),
                     ),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () => Navigator.pushNamed(context, '/profil'),
                       style: TextButton.styleFrom(padding: EdgeInsets.zero),
                       child: Text(
                         "Lihat Profile",
@@ -179,7 +179,7 @@ class _NavigationDrawerWidgetState extends State<NavigationDrawerWidget> {
                 color: Color(0xFF424242),
               ),
             ),
-            onTap: () {},
+            onTap: () => Navigator.pushNamed(context, '/log_aktivitas'),
           ),
         ],
       ),

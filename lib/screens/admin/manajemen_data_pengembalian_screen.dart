@@ -2,28 +2,45 @@ import 'package:flutter/material.dart';
 import 'package:creaventory/export.dart';
 import '../../widgets/card_data_pengembalian_widget.dart';
 import 'package:creaventory/screens/admin/tambah_data_pengembalian_screen.dart';
+import 'package:creaventory/screens/admin/detail_data_pengembalian_screen.dart';
+import 'package:creaventory/screens/admin/edit_data_pengembalian_screen.dart';
 
 class ManajemenDataPengembalianScreen extends StatefulWidget {
   const ManajemenDataPengembalianScreen({super.key});
 
   @override
-  State<ManajemenDataPengembalianScreen> createState() => _ManajemenDataPengembalianScreenState();
+  State<ManajemenDataPengembalianScreen> createState() =>
+      _ManajemenDataPengembalianScreenState();
 }
 
-class _ManajemenDataPengembalianScreenState extends State<ManajemenDataPengembalianScreen> {
-
-  final List<Map<String, String>> dummyPengembalian = [
+class _ManajemenDataPengembalianScreenState
+    extends State<ManajemenDataPengembalianScreen> {
+  final List<Map<String, dynamic>> dummyPengembalian = [
     {
       "kode": "TRX24578965",
       "nama": "Richo Ferdinand",
       "tglPinjam": "18/01/2026",
+      "tglRencanaKembali": "19/01/2026",
       "tglKembali": "19/01/2026",
+      "status": "Tepat Waktu",
+      "petugas": "Petugas Admin 1",
+      "alat": [
+        {"nama": "iPad M3 Pro", "qty": "1", "kondisi": "Baik"},
+        {"nama": "Stylus Pen", "qty": "1", "kondisi": "Baik"},
+      ],
     },
     {
-      "kode": "TRX24578966",
+      "kode": "TRX45672905",
       "nama": "Richa Ferdinyoy",
       "tglPinjam": "17/01/2026",
-      "tglKembali": "20/01/2026",
+      "tglRencanaKembali": "20/01/2026",
+      "tglKembali": "22/01/2026",
+      "status": "Terlambat",
+      "petugas": "Petugas Admin 2",
+      "alat": [
+        {"nama": "Sony A7 IV", "qty": "1", "kondisi": "Baik"},
+        {"nama": "Lens 35mm", "qty": "1", "kondisi": "Rusak"},
+      ],
     },
   ];
 
@@ -52,10 +69,22 @@ class _ManajemenDataPengembalianScreenState extends State<ManajemenDataPengembal
                       tglPinjam: data["tglPinjam"]!,
                       tglKembali: data["tglKembali"]!,
                       onDetail: () {
-                        debugPrint("Detail");
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                DetailPengembalianScreen(data: data),
+                          ),
+                        );
                       },
                       onEdit: () {
-                        debugPrint("Edit");
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                EditDataPengembalianScreen(data: data),
+                          ),
+                        );
                       },
                       onDelete: () {
                         debugPrint("Delete");
