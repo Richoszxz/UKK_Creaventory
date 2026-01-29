@@ -63,6 +63,9 @@ class MyApp extends StatelessWidget {
         drawerTheme: DrawerThemeData(
           scrimColor: Color(0xFF248250).withOpacity(0.5),
         ),
+        dialogTheme: DialogThemeData(
+          barrierColor: Color(0xFF248250).withOpacity(0.5)
+        )
       ),
       routes: {
         '/splash': (context) => const SplashScreen(),

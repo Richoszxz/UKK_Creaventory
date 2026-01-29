@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AlertHelper {
   // =======================
@@ -17,8 +18,8 @@ class AlertHelper {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          title: const Text("Berhasil"),
-          content: Text(message),
+          title: Text("Berhasil", style: GoogleFonts.poppins()),
+          content: Text(message, style: GoogleFonts.poppins()),
           actions: [
             TextButton(
               onPressed: () {
@@ -48,8 +49,8 @@ class AlertHelper {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          title: const Text("Terjadi Kesalahan"),
-          content: Text(message),
+          title: Text("Terjadi Kesalahan", style: GoogleFonts.poppins()),
+          content: Text(message, style: GoogleFonts.poppins()),
           actions: [
             TextButton(
               onPressed: () {
@@ -79,18 +80,21 @@ class AlertHelper {
       builder: (dialogContext) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(15),
           ),
-          title: Text(judul),
-          content: Text(pesan),
+          title: Text(judul, style: GoogleFonts.poppins()),
+          content: Text(pesan, style: GoogleFonts.poppins()),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop(); // tutup dialog
               },
-              child: const Text("Batal"),
+              child: Text(
+                "Batal",
+                style: GoogleFonts.poppins(color: Color(0xFF424242)),
+              ),
             ),
-            ElevatedButton(
+            TextButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop(); // tutup dialog
                 onConfirm(); // jalankan aksi

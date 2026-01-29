@@ -90,17 +90,6 @@ class _ProfilScreenState extends State<ProfilScreen> {
                       ),
           
                       const SizedBox(height: 10),
-                      _buildLabel("Keamanan"),
-          
-                      _buildMenuTile("Ubah Password", Icons.lock_outline, () {}),
-                      _buildMenuTile(
-                        "Hapus Akun",
-                        Icons.delete_outline,
-                        () {},
-                        isDestructive: true,
-                      ),
-          
-                      const SizedBox(height: 10),
                       _buildLogoutButton(),
                     ],
                   ),
@@ -210,25 +199,6 @@ class _ProfilScreenState extends State<ProfilScreen> {
     );
   }
 
-  Widget _buildMenuTile(
-    String title,
-    IconData icon,
-    VoidCallback onTap, {
-    bool isDestructive = false,
-  }) {
-    return ListTile(
-      onTap: onTap,
-      leading: Icon(icon, color: isDestructive ? Colors.red : Colors.black87),
-      title: Text(
-        title,
-        style: GoogleFonts.poppins(
-          color: isDestructive ? Colors.red : Color(0xFF424242),
-        ),
-      ),
-      trailing: const Icon(Icons.chevron_right, size: 20),
-    );
-  }
-
   Widget _buildLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10, left: 5),
@@ -249,7 +219,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
       height: 50,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.red[400],
+          backgroundColor: Color(0xFF822424),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
