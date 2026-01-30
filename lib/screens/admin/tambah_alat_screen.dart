@@ -155,7 +155,16 @@ class _TambahAlatScreenState extends State<TambahAlatScreen> {
               DropdownButtonFormField<int>(
                 // Menggunakan int untuk ID
                 value: kategoriAlatIdTerpilih,
-                hint: Text("Pilih kategori", style: GoogleFonts.poppins()),
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  color: Theme.of(context).colorScheme.onSecondary,
+                ),
+                hint: Text(
+                  "Pilih kategori",
+                  style: GoogleFonts.poppins(
+                    color: Theme.of(context).colorScheme.onSecondary,
+                  ),
+                ),
                 items: listKategoriDatabase.map((kat) {
                   return DropdownMenuItem<int>(
                     value: kat.idKategori, // Value adalah ID

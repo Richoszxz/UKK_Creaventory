@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:creaventory/export.dart';
 import 'package:creaventory/widgets/card_list_alat_widget.dart';
 import 'package:creaventory/screens/admin/detail_alat_screen.dart';
+import 'package:creaventory/screens/admin/edit_alat_screen.dart';
 
 class ManajemenAlatScreen extends StatefulWidget {
   const ManajemenAlatScreen({super.key});
@@ -19,13 +20,9 @@ class _ManajemenAlatScreenState extends State<ManajemenAlatScreen> {
   List<String> kategoriList = ["Semua"];
   String keywordPencarian = '';
 
-  // Simpan future dalam variabel agar tidak reload terus saat setState
-  late Future<List<dynamic>> _futureAlat;
-
   @override
   void initState() {
     super.initState();
-    _futureAlat = _alatService.ambilAlat();
     _loadKategori();
   }
 
@@ -118,7 +115,7 @@ class _ManajemenAlatScreenState extends State<ManajemenAlatScreen> {
 
           Expanded(
             child: FutureBuilder(
-              future: _futureAlat,
+              future: _alatService.ambilAlat(),
               builder: (context, asyncSnapshot) {
                 if (asyncSnapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -183,8 +180,13 @@ class _ManajemenAlatScreenState extends State<ManajemenAlatScreen> {
                         },
                         tombolAksi: [
                           ElevatedButton(
-                            onPressed: () =>
-                                Navigator.of(context).pushNamed('/edit_alat'),
+                            onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    EditAlatScreen(data: alat),
+                              ),
+                            ).then((_) => setState(() {})),
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 25,
@@ -214,14 +216,14 @@ class _ManajemenAlatScreenState extends State<ManajemenAlatScreen> {
                                 pesan: "Apakah anda yakin menghapus alat ini ?",
                                 onConfirm: () async {
                                   try {
-                                    await _alatService.hapusAlat(alat.idUser!);
+                                    await _alatService.hapusAlat(alat.idAlat);
+
+                                    setState(() {});
 
                                     AlertHelper.showSuccess(
                                       context,
                                       'Berhasil menghapus alat !',
                                     );
-
-                                    setState(() {});
                                   } catch (e) {
                                     AlertHelper.showError(
                                       context,

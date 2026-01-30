@@ -112,10 +112,8 @@ class _ManajemenPenggunaScreenState extends State<ManajemenPenggunaScreen> {
                                 AlertHelper.showSuccess(
                                   context,
                                   'Berhasil menghapus pengguna !',
-                                  onOk: () => Navigator.pop(context),
+                                  onOk: () => setState(() {}),
                                 );
-
-                                setState(() {});
                               } catch (e) {
                                 AlertHelper.showError(
                                   context,

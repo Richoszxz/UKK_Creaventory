@@ -11,7 +11,8 @@ class AlatService {
     try {
       final response = await _supabaseService
           .from('alat')
-          .select('*, kategori(nama_kategori)');
+          .select('*, kategori(nama_kategori)')
+          .order('nama_alat', ascending: true);
 
       return (response as List<dynamic>)
           .map((item) => ModelAlat.fromMap(item))
@@ -27,9 +28,43 @@ class AlatService {
   }
 
   // UPDATE
-  Future<void> editAlat(int id, Map<String, dynamic> data) async {
-    await _supabaseService.from('alat').update(data).eq('id_alat', id);
+  Future<void> editAlat({
+  required int idAlat,
+  required String namaAlat,
+  required int stokAlat,
+  required int idKategori,
+  required String kondisi,
+  String? spesifikasi,
+  File? gambar, // mobile
+  Uint8List? gambarBytes,  // web
+  String? namaFile,
+}) async {
+  String? imageUrl;
+
+  if (gambar != null || gambarBytes != null) {
+    imageUrl = await uploadGambar(
+      file: gambar,
+      bytes: gambarBytes,
+      fileName: namaFile ?? "gambar.jpg",
+    );
   }
+
+  final data = {
+    'nama_alat': namaAlat,
+    'stok_alat': stokAlat,
+    'id_kategori': idKategori,
+    'kondisi_alat': kondisi,
+    'spesifikasi_alat': spesifikasi,
+    if (imageUrl != null) 'gambar_url': imageUrl,
+    'updated_at': DateTime.now().toIso8601String(),
+  };
+
+  await _supabaseService
+      .from('alat')
+      .update(data)
+      .eq('id_alat', idAlat);
+}
+
 
   // DELETE
   Future<void> hapusAlat(int id) async {

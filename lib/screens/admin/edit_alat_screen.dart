@@ -2,9 +2,11 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:creaventory/export.dart';
+import 'package:flutter/foundation.dart';
 
 class EditAlatScreen extends StatefulWidget {
-  const EditAlatScreen({super.key});
+  final ModelAlat data;
+  const EditAlatScreen({super.key, required this.data});
 
   @override
   State<EditAlatScreen> createState() => _EditAlatScreenState();
@@ -18,42 +20,46 @@ class _EditAlatScreenState extends State<EditAlatScreen> {
   final TextEditingController spesifikasiAlatController =
       TextEditingController();
 
-  String? kategoriAlatTerpilih;
+  final KategoriService _kategoriService = KategoriService();
+
+  int? kategoriAlatTerpilih;
   String? kondisiAlatTerpilih;
   File? gambar;
+  Uint8List? gambarBytes;
+  String? namaFile;
 
-  final List<String> kategoriList = [
-    "Elektronik",
-    "Alat Tulis",
-    "Multimedia",
-    "Lainnya",
-  ];
+  List<ModelKategori> listKategori = [];
 
-  final List<String> kondisiList = ["Baik", "Rusak Ringan", "Rusak Berat"];
+  final List<String> kondisiList = ["baik", "rusak", "pemeliharaan"];
 
-  // ================= DUMMY DATA =================
-  final Map<String, dynamic> dummyData = {
-    "nama": "Laptop Asus VivoBook",
-    "stok": "5",
-    "kategori": "Elektronik",
-    "kondisi": "Baik",
-    "spesifikasi": "Core i5, RAM 8GB, SSD 512GB",
-    "gambar": null, // isi file path kalau mau
-  };
+  Future<void> _loadKategori() async {
+    try {
+      final data = await _kategoriService.ambilKategori();
+      setState(() {
+        listKategori = data;
+      });
+    } catch (e) {
+      debugPrint("Gagal load kategori: $e");
+    }
+  }
 
   @override
   void initState() {
     super.initState();
 
-    /// isi form dari dummy
-    namaAlatController.text = dummyData["nama"];
-    stokAlatController.text = dummyData["stok"];
-    kategoriAlatTerpilih = dummyData["kategori"];
-    kondisiAlatTerpilih = dummyData["kondisi"];
-    spesifikasiAlatController.text = dummyData["spesifikasi"];
+    final alat = widget.data;
+    _loadKategori();
 
-    if (dummyData["gambar"] != null) {
-      gambar = File(dummyData["gambar"]);
+    namaAlatController.text = alat.namaAlat;
+    stokAlatController.text = alat.stokAlat.toString();
+    spesifikasiAlatController.text = alat.spesifikasiAlat ?? '';
+
+    kategoriAlatTerpilih = alat.idKategori;
+    kondisiAlatTerpilih = alat.kondisiAlat;
+
+    if (alat.gambarUrl != null && alat.gambarUrl!.isNotEmpty) {
+      // kalau gambar dari network, biarkan null
+      // preview pakai Image.network (lihat step 4)
     }
   }
 
@@ -62,24 +68,44 @@ class _EditAlatScreenState extends State<EditAlatScreen> {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.image,
       allowMultiple: false,
+      withData: kIsWeb,
     );
 
-    if (result != null && result.files.single.path != null) {
+    if (result != null) {
       setState(() {
-        gambar = File(result.files.single.path!);
+        namaFile = result.files.single.name;
+
+        if (kIsWeb) {
+          gambarBytes = result.files.single.bytes;
+          gambar = null;
+        } else {
+          gambar = File(result.files.single.path!);
+          gambarBytes = null;
+        }
       });
     }
   }
 
-  void simpanPerubahan() {
+  void simpanPerubahan() async {
     if (_formKey.currentState!.validate()) {
-      debugPrint("=== DATA UPDATE ===");
-      debugPrint("Nama: ${namaAlatController.text}");
-      debugPrint("Stok: ${stokAlatController.text}");
-      debugPrint("Kategori: $kategoriAlatTerpilih");
-      debugPrint("Kondisi: $kondisiAlatTerpilih");
-      debugPrint("Spesifikasi: ${spesifikasiAlatController.text}");
-      debugPrint("Gambar: ${gambar?.path}");
+      try {
+        await AlatService().editAlat(
+          idAlat: widget.data.idAlat,
+          namaAlat: namaAlatController.text,
+          stokAlat: int.parse(stokAlatController.text),
+          idKategori: kategoriAlatTerpilih!,
+          kondisi: kondisiAlatTerpilih!,
+          spesifikasi: spesifikasiAlatController.text,
+          gambar: gambar, // File? (opsional)
+          gambarBytes: gambarBytes,
+          namaFile: namaFile,
+        );
+
+        if (mounted) Navigator.pop(context);
+        AlertHelper.showSuccess(context, "Berhasil update alat");
+      } catch (e) {
+        AlertHelper.showError(context, "Gagal update alat");
+      }
     }
   }
 
@@ -107,14 +133,7 @@ class _EditAlatScreenState extends State<EditAlatScreen> {
 
               /// ================= KATEGORI =================
               _label("Kategori alat"),
-              _dropdown(
-                value: kategoriAlatTerpilih,
-                hint: "Pilih kategori",
-                items: kategoriList,
-                onChanged: (value) {
-                  setState(() => kategoriAlatTerpilih = value);
-                },
-              ),
+              _dropdownKategori(),
 
               const SizedBox(height: 14),
 
@@ -132,14 +151,7 @@ class _EditAlatScreenState extends State<EditAlatScreen> {
 
               /// ================= KONDISI =================
               _label("Kondisi alat"),
-              _dropdown(
-                value: kondisiAlatTerpilih,
-                hint: "Pilih kondisi",
-                items: kondisiList,
-                onChanged: (value) {
-                  setState(() => kondisiAlatTerpilih = value);
-                },
-              ),
+              _dropdownKondisi(),
 
               const SizedBox(height: 14),
 
@@ -239,24 +251,18 @@ class _EditAlatScreenState extends State<EditAlatScreen> {
     );
   }
 
-  Widget _dropdown({
-    required String? value,
-    required String hint,
-    required List<String> items,
-    required ValueChanged<String?> onChanged,
-  }) {
-    return DropdownButtonFormField<String>(
-      value: value,
+  Widget _dropdownKategori() {
+    return DropdownButtonFormField<int>(
+      value: kategoriAlatTerpilih,
+      style: GoogleFonts.poppins(
+        color: Theme.of(context).colorScheme.onSecondary,
+        fontSize: 15,
+      ),
       hint: Text(
-        hint,
+        "Pilih kategori",
         style: GoogleFonts.poppins(
           color: Theme.of(context).colorScheme.primary,
         ),
-      ),
-      dropdownColor: Theme.of(context).colorScheme.secondary,
-      style: GoogleFonts.poppins(
-        fontSize: 16,
-        color: Theme.of(context).colorScheme.onSecondary,
       ),
       decoration: InputDecoration(
         filled: true,
@@ -277,11 +283,58 @@ class _EditAlatScreenState extends State<EditAlatScreen> {
           ),
         ),
       ),
-      items: items
-          .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-          .toList(),
-      onChanged: onChanged,
-      validator: (value) => value == null ? "Wajib memilih $hint" : null,
+      items: listKategori.map((kategori) {
+        return DropdownMenuItem<int>(
+          value: kategori.idKategori,
+          child: Text(kategori.namaKategori),
+        );
+      }).toList(),
+      onChanged: (value) {
+        setState(() => kategoriAlatTerpilih = value);
+      },
+      validator: (value) => value == null ? "Wajib memilih kategori" : null,
+    );
+  }
+
+  Widget _dropdownKondisi() {
+    return DropdownButtonFormField<String>(
+      value: kondisiAlatTerpilih,
+      style: GoogleFonts.poppins(
+        color: Theme.of(context).colorScheme.onSecondary,
+      ),
+      hint: Text(
+        "Pilih kondisi",
+        style: GoogleFonts.poppins(
+          color: Theme.of(context).colorScheme.primary,
+          fontSize: 15,
+        ),
+      ),
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: Theme.of(context).colorScheme.secondary,
+        contentPadding: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.primary,
+            width: 1,
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.primary,
+            width: 1,
+          ),
+        ),
+      ),
+      items: kondisiList.map((kondisi) {
+        return DropdownMenuItem<String>(value: kondisi, child: Text(kondisi));
+      }).toList(),
+      onChanged: (value) {
+        setState(() => kondisiAlatTerpilih = value);
+      },
+      validator: (value) => value == null ? "Wajib memilih kondisi" : null,
     );
   }
 
@@ -307,15 +360,32 @@ class _EditAlatScreenState extends State<EditAlatScreen> {
               height: 50,
               width: 50,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(15),
                 color: Colors.grey.shade300,
               ),
-              child: gambar == null
-                  ? const Icon(Icons.image_outlined)
-                  : ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image.file(gambar!, fit: BoxFit.cover),
-                    ),
+              child: kIsWeb
+                  ? (gambarBytes != null
+                        // 🌐 WEB → preview dari memory
+                        ? Image.memory(gambarBytes!, fit: BoxFit.cover)
+                        // 🌐 WEB → belum pilih, tapi ada dari server
+                        : (widget.data.gambarUrl != null &&
+                                  widget.data.gambarUrl!.isNotEmpty
+                              ? Image.network(
+                                  widget.data.gambarUrl!,
+                                  fit: BoxFit.cover,
+                                )
+                              : const Icon(Icons.image_outlined)))
+                  : (gambar != null
+                        // 📱 MOBILE → preview dari file
+                        ? Image.file(gambar!, fit: BoxFit.cover)
+                        // 📱 MOBILE → dari server
+                        : (widget.data.gambarUrl != null &&
+                                  widget.data.gambarUrl!.isNotEmpty
+                              ? Image.network(
+                                  widget.data.gambarUrl!,
+                                  fit: BoxFit.cover,
+                                )
+                              : const Icon(Icons.image_outlined))),
             ),
 
             const SizedBox(width: 12),
@@ -323,9 +393,7 @@ class _EditAlatScreenState extends State<EditAlatScreen> {
             /// Nama file
             Expanded(
               child: Text(
-                gambar == null
-                    ? "Upload foto alat"
-                    : gambar!.path.split('/').last,
+                namaFile ?? "Upload foto alat",
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.poppins(
                   fontSize: 15,

@@ -23,6 +23,7 @@ class _TambahKategoriScreenState extends State<TambahKategoriScreen> {
           deskripsiKategoriController.text,
         );
         if (mounted) Navigator.pop(context);
+        AlertHelper.showSuccess(context, 'Berhasil menambah kategori');
       } catch (e) {
         AlertHelper.showError(context, 'Gagak menambah kategori');
       }
@@ -110,6 +111,7 @@ class _TambahKategoriScreenState extends State<TambahKategoriScreen> {
       maxLines: maxLines,
       keyboardType: keyboardType,
       validator: validator,
+      style: GoogleFonts.poppins(color: Color(0xFF424242)),
       decoration: InputDecoration(
         filled: true,
         fillColor: Theme.of(context).colorScheme.secondary,

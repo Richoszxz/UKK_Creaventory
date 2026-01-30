@@ -9,7 +9,8 @@ class PenggunaService {
           .from('pengguna')
           .select()
           .inFilter('role', ['peminjam', 'petugas'])
-          .eq('status', true);
+          .eq('status', true)
+          .order('username', ascending: true);
 
       return (response as List<dynamic>)
           .map((item) => ModelPengguna.fromMap(item))
@@ -45,7 +46,10 @@ class PenggunaService {
     }
   }
 
-  Future<void> editPengguna(String idUser, Map<String, dynamic> dataBaru) async {
+  Future<void> editPengguna(
+    String idUser,
+    Map<String, dynamic> dataBaru,
+  ) async {
     try {
       await _supabaseService
           .from('pengguna')
@@ -55,13 +59,10 @@ class PenggunaService {
       throw Exception('Gagal memperbarui data pengguna: $e');
     }
   }
-  
+
   Future<void> hapusPengguna(String idUser) async {
     try {
-      await _supabaseService
-          .from('pengguna')
-          .delete()
-          .eq('id_user', idUser);
+      await _supabaseService.from('pengguna').delete().eq('id_user', idUser);
     } on Exception catch (e) {
       throw Exception('Gagal menghapus pengguna: $e');
     }

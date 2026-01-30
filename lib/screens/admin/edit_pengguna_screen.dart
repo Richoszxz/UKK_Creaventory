@@ -141,10 +141,8 @@ class _EditPenggunaScreenState extends State<EditPenggunaScreen> {
           'role': _roleTerpilih,
         });
 
-        if (mounted) {
-          AlertHelper.showSuccess(context, 'Berhasil menyimpan perubahan !');
-          Navigator.pop(context); // Kembali ke halaman manajemen
-        }
+        if (mounted) Navigator.pop(context);
+        AlertHelper.showSuccess(context, 'Berhasil menyimpan perubahan !');
       } catch (e) {
         AlertHelper.showError(context, 'Gagal menyimpan perubahan !');
         debugPrint('Error $e');

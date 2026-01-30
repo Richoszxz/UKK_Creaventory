@@ -73,15 +73,39 @@ class _ManajemenKategoriScreenState extends State<ManajemenKategoriScreen> {
                           subtitle:
                               listKategori.deskripsiKategori ??
                               'Tidak ada deskripsi kategori',
-                          diEdit: () => Navigator.of(context).pushNamed(
-                            '/edit_kategori',
-                            arguments: listKategori,
-                          ),
-                          diHapus: () async {
-                            await _kategoriService.hapusKategori(
-                              listKategori.idKategori!,
-                            );
-                            setState(() {});
+                          diEdit: () => Navigator.of(context)
+                              .pushNamed(
+                                '/edit_kategori',
+                                arguments: listKategori,
+                              )
+                              .then((_) => setState(() {})),
+                          diHapus: () {
+                            try {
+                              AlertHelper.showConfirm(
+                                context,
+                                judul: 'Menghapus kategori',
+                                pesan: 'Apakah anda yakin menghapus kategori ?',
+                                onConfirm: () async {
+                                  await _kategoriService.hapusKategori(
+                                    listKategori.idKategori!,
+                                  );
+
+                                  setState(() {});
+
+                                  AlertHelper.showSuccess(
+                                    context,
+                                    'Berhasil menghapus kategori !',
+                                    onOk: () => Navigator.pop(context),
+                                  );
+                                },
+                              );
+                            } catch (e) {
+                              // TODO
+                              AlertHelper.showError(
+                                context,
+                                'Gagal menghapus kategori !\npesan: $e',
+                              );
+                            }
                           },
                         ),
                       );
@@ -94,7 +118,9 @@ class _ManajemenKategoriScreenState extends State<ManajemenKategoriScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.of(context).pushNamed('/tambah_kategori'),
+        onPressed: () => Navigator.of(
+          context,
+        ).pushNamed('/tambah_kategori').then((_) => setState(() {})),
         child: Icon(Icons.add_outlined),
         shape: CircleBorder(),
       ),
