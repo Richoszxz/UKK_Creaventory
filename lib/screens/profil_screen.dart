@@ -11,15 +11,6 @@ class ProfilScreen extends StatefulWidget {
 }
 
 class _ProfilScreenState extends State<ProfilScreen> {
-  // Simulasi pengambilan data dari tabel public.pengguna
-  final Map<String, dynamic> userData = {
-    "id_user": "550e8400-e29b-41d4-a716-446655440000", // UUID
-    "username": "Richo Ferdinand",
-    "email": "richo@example.com",
-    "role": "peminjam", // role_enum (peminjam/admin)
-    "status": true,
-    "created_at": "2024-01-20T10:00:00Z",
-  };
 
   final AuthService _authService = AuthService();
   final ProfilService _profilService = ProfilService();

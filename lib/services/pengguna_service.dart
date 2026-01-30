@@ -8,7 +8,7 @@ class PenggunaService {
       final response = await _supabaseService
           .from('pengguna')
           .select()
-          .eq('role', 'peminjam')
+          .inFilter('role', ['peminjam', 'petugas'])
           .eq('status', true);
 
       return (response as List<dynamic>)

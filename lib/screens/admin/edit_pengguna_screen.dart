@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:creaventory/export.dart';
 
 class EditPenggunaScreen extends StatefulWidget {
-  const EditPenggunaScreen({super.key});
+  final ModelPengguna data;
+  const EditPenggunaScreen({super.key, required this.data});
 
   @override
   State<EditPenggunaScreen> createState() => _EditPenggunaScreenState();
@@ -11,32 +12,18 @@ class EditPenggunaScreen extends StatefulWidget {
 class _EditPenggunaScreenState extends State<EditPenggunaScreen> {
   final PenggunaService _penggunaService = PenggunaService();
   final _formKey = GlobalKey<FormState>();
-
   // Controller untuk input
-  late TextEditingController _namaController;
-  late TextEditingController _emailController;
+  late TextEditingController _userNameController;
 
-  ModelPengguna? dataPengguna; // Data yang akan diedit
-  bool _isInit = true;
+  String? _roleTerpilih;
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Mengambil data pengguna yang dikirim lewat Navigator
-    if (_isInit) {
-      dataPengguna =
-          ModalRoute.of(context)!.settings.arguments as ModelPengguna;
-      _namaController = TextEditingController(text: dataPengguna?.userName);
-      _emailController = TextEditingController(text: dataPengguna?.email);
-      _isInit = false;
-    }
-  }
+  final List<String> daftarRole = ['peminjam', 'petugas'];
 
   @override
-  void dispose() {
-    _namaController.dispose();
-    _emailController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _userNameController = TextEditingController(text: widget.data.userName);
+    _roleTerpilih = widget.data.role;
   }
 
   @override
@@ -57,7 +44,7 @@ class _EditPenggunaScreenState extends State<EditPenggunaScreen> {
               children: [
                 _label('Nama Pengguna:'),
                 _textField(
-                  controller: _namaController,
+                  controller: _userNameController,
                   hint: 'Masukkan nama baru',
                   validator: (value) => value == null || value.isEmpty
                       ? 'Nama tidak boleh kosong'
@@ -65,14 +52,54 @@ class _EditPenggunaScreenState extends State<EditPenggunaScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                _label('Email:'),
-                _textField(
-                  controller: _emailController,
-                  hint: 'Masukkan email baru',
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) => value == null || !value.contains('@')
-                      ? 'Email tidak valid'
-                      : null,
+                _label('Role:'),
+                DropdownButtonFormField<String>(
+                  value: _roleTerpilih,
+                  dropdownColor: Theme.of(context).colorScheme.secondary,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    color: Theme.of(context).colorScheme.onSecondary,
+                  ),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Theme.of(context).colorScheme.secondary,
+                    contentPadding: EdgeInsets.symmetric(
+                      vertical: 20,
+                      horizontal: 10,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 1,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                  items: daftarRole
+                      .map(
+                        (role) => DropdownMenuItem(
+                          value: role,
+                          child: Text(
+                            role.toUpperCase(),
+                            style: GoogleFonts.poppins(),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _roleTerpilih = value;
+                    });
+                  },
+                  validator: (value) =>
+                      value == null ? 'Role harus dipilih' : null,
                 ),
                 const SizedBox(height: 30),
 
@@ -109,9 +136,9 @@ class _EditPenggunaScreenState extends State<EditPenggunaScreen> {
   void _simpanPerubahan() async {
     if (_formKey.currentState!.validate()) {
       try {
-        await _penggunaService.editPengguna(dataPengguna!.idUser!, {
-          'username': _namaController.text,
-          'email': _emailController.text,
+        await _penggunaService.editPengguna(widget.data.idUser!, {
+          'username': _userNameController.text,
+          'role': _roleTerpilih,
         });
 
         if (mounted) {
@@ -167,7 +194,9 @@ class _EditPenggunaScreenState extends State<EditPenggunaScreen> {
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide.none, // Dibuat bersih tanpa border luar
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.primary,
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),

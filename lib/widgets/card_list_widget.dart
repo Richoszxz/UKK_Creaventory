@@ -6,10 +6,14 @@ class CardListWidget extends StatefulWidget {
   final String? subtitle;
   final VoidCallback? diEdit;
   final VoidCallback? diHapus;
+  final VoidCallback? diDetail;
   const CardListWidget({
     super.key,
     this.title,
-    this.subtitle, this.diEdit, this.diHapus,
+    this.subtitle,
+    this.diEdit,
+    this.diHapus,
+    this.diDetail,
   });
 
   @override
@@ -35,10 +39,7 @@ class _CardListWidgetState extends State<CardListWidget> {
       ),
       child: Center(
         child: ListTile(
-          contentPadding: const EdgeInsets.only(
-            left: 15,
-            right: 10,
-          ),
+          contentPadding: const EdgeInsets.only(left: 15, right: 10),
           title: Text(
             widget.title ?? '',
             maxLines: 1,
@@ -76,6 +77,24 @@ class _CardListWidgetState extends State<CardListWidget> {
               ),
             ),
             itemBuilder: (context) => <PopupMenuEntry<String>>[
+              PopupMenuItem<String>(
+                value: 'detail',
+                onTap: widget.diDetail,
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.visibility_outlined,
+                      color: Theme.of(context).colorScheme.onSecondary,
+                    ),
+                    Text(
+                      'Detail',
+                      style: GoogleFonts.poppins(
+                        color: Theme.of(context).colorScheme.onSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               PopupMenuItem<String>(
                 value: 'edit',
                 onTap: widget.diEdit,

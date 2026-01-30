@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:creaventory/export.dart';
 import '../../widgets/card_list_widget.dart';
 import 'package:creaventory/screens/admin/edit_pengguna_screen.dart';
+import 'package:creaventory/screens/admin/detail_pengguna_screen.dart';
 
 class ManajemenPenggunaScreen extends StatefulWidget {
   const ManajemenPenggunaScreen({super.key});
@@ -93,8 +94,8 @@ class _ManajemenPenggunaScreenState extends State<ManajemenPenggunaScreen> {
                         diEdit: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => EditPenggunaScreen(),
-                            settings: RouteSettings(arguments: pengguna),
+                            builder: (context) =>
+                                EditPenggunaScreen(data: pengguna),
                           ),
                         ).then((_) => setState(() {})),
                         diHapus: () {
@@ -123,6 +124,15 @@ class _ManajemenPenggunaScreenState extends State<ManajemenPenggunaScreen> {
                                 debugPrint('$e');
                               }
                             },
+                          );
+                        },
+                        diDetail: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  DetailPenggunaScreen(data: pengguna),
+                            ),
                           );
                         },
                       ),
