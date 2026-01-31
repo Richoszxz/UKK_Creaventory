@@ -15,7 +15,6 @@ import 'screens/peminjam/riwayat_peminjaman_screen.dart';
 import 'screens/petugas/monitoring_peminjaman_screen.dart';
 import 'screens/petugas/monitoring_pengembalian_screen.dart';
 import 'screens/admin/tambah_alat_screen.dart';
-import 'screens/admin/edit_alat_screen.dart';
 import 'screens/admin/tambah_kategori_screen.dart';
 import 'screens/admin/edit_kategori_screen.dart';
 import 'screens/petugas/cetak_kartu_peminjaman_screen.dart';
