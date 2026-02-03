@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:creaventory/export.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -61,6 +64,111 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     loadDashboard();
+  }
+
+  Future<List<dynamic>> fetchLaporanHariIni() async {
+    final client = SupabaseService.client;
+
+    final today = DateTime.now().toIso8601String().substring(0, 10);
+
+    final data = await client
+        .from('peminjaman')
+        .select('''
+        kode_peminjaman,
+        tanggal_peminjaman,
+        tanggal_kembali_rencana,
+        status_peminjaman,
+
+        pengguna:pengguna!peminjaman_id_user_fkey (
+          username,
+          email
+        ),
+
+        detail_peminjaman (
+          jumlah_peminjaman,
+          alat (
+            nama_alat,
+            kondisi_alat
+          )
+        )
+      ''')
+        .inFilter('status_peminjaman', ['dipinjam', 'dikembalikan'])
+        .gte('tanggal_peminjaman', '$today 00:00:00')
+        .lte('tanggal_peminjaman', '$today 23:59:59')
+        .order('tanggal_peminjaman', ascending: false);
+
+    return data;
+  }
+
+  Future<void> cetakLaporan() async {
+    final data = await fetchLaporanHariIni();
+
+    final pdf = pw.Document();
+    final font = await PdfGoogleFonts.poppinsRegular();
+    final bold = await PdfGoogleFonts.poppinsBold();
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        build: (context) => [
+          pw.Text(
+            'LAPORAN PEMINJAMAN & PENGEMBALIAN HARI INI',
+            style: pw.TextStyle(font: bold, fontSize: 18),
+          ),
+          pw.SizedBox(height: 10),
+          pw.Text(
+            'Tanggal: ${DateTime.now().toString().substring(0, 10)}',
+            style: pw.TextStyle(font: font),
+          ),
+          pw.SizedBox(height: 15),
+
+          pw.Table.fromTextArray(
+            headers: [
+              'Kode',
+              'Email',
+              'Username',
+              'Tanggal Pinjam',
+              'Tanggal Kembali',
+              'Status',
+              'Alat',
+              'Jumlah',
+            ],
+            headerStyle: pw.TextStyle(font: bold, fontSize: 6),
+            cellStyle: pw.TextStyle(font: font, fontSize: 6),
+            cellPadding: const pw.EdgeInsets.symmetric(
+              vertical: 2,
+              horizontal: 2,
+            ),
+            columnWidths: {
+              0: const pw.FlexColumnWidth(1.4), // kode
+              1: const pw.FlexColumnWidth(2.2), // email
+              2: const pw.FlexColumnWidth(1.5), // user
+              3: const pw.FlexColumnWidth(1.3), // pinjam
+              4: const pw.FlexColumnWidth(1.3), // kembali
+              5: const pw.FlexColumnWidth(1.1), // status
+              6: const pw.FlexColumnWidth(2.0), // alat
+              7: const pw.FlexColumnWidth(0.8), // qty
+            },
+            data: data.expand((p) {
+              return (p['detail_peminjaman'] as List).map((dp) {
+                return [
+                  p['kode_peminjaman'],
+                  p['pengguna']['email'],
+                  p['pengguna']['username'],
+                  p['tanggal_peminjaman'].toString().substring(0, 10),
+                  p['tanggal_kembali_rencana'].toString().substring(0, 10),
+                  p['status_peminjaman'],
+                  dp['alat']['nama_alat'],
+                  dp['jumlah_peminjaman'].toString(),
+                ];
+              }).toList();
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+
+    await Printing.layoutPdf(onLayout: (format) async => pdf.save());
   }
 
   @override
@@ -176,9 +284,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     const SizedBox(width: 15),
                     Text(
-                      "Laporan Peminjaman",
+                      "Laporan Peminjaman dan\nPengembalian Hari Ini",
                       style: GoogleFonts.poppins(
-                        fontSize: 20,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).colorScheme.onSecondary,
                       ),
@@ -196,7 +304,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    onPressed: () {},
+                    onPressed: () async {
+                      await cetakLaporan();
+                    },
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
