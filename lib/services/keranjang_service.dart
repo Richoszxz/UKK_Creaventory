@@ -21,7 +21,6 @@ class KeranjangService {
         "spesifikasi": alat["spesifikasi"],
         "jumlah": 1,
         "gambar": alat["gambar"],
-        "tanggalKembali": null,
       });
     }
   }

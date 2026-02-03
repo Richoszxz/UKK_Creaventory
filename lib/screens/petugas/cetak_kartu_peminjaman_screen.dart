@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:creaventory/export.dart';
+import 'package:printing/printing.dart';
+import 'package:creaventory/services/cetak_kartu_peminjaman_service.dart';
 
 class CetakKartuPeminjamanScreen extends StatefulWidget {
-  const CetakKartuPeminjamanScreen({super.key});
+  final ModelPeminjaman dataPeminjaman;
+  const CetakKartuPeminjamanScreen({super.key, required this.dataPeminjaman});
 
   @override
   State<CetakKartuPeminjamanScreen> createState() =>
@@ -59,7 +62,7 @@ class _CetakKartuPeminjamanScreenState
                   rowDetail(
                     label: "Kode Peminjaman",
                     value: Text(
-                      "TRX24578965",
+                      widget.dataPeminjaman.kodePeminjaman!,
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         color: Theme.of(context).colorScheme.primary,
@@ -70,7 +73,7 @@ class _CetakKartuPeminjamanScreenState
                   rowDetail(
                     label: "Nama Peminjam",
                     value: Text(
-                      "Richo Ferdinand",
+                      widget.dataPeminjaman.namaUser!,
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         color: Theme.of(context).colorScheme.primary,
@@ -81,7 +84,7 @@ class _CetakKartuPeminjamanScreenState
                   rowDetail(
                     label: "Email Peminjam",
                     value: Text(
-                      "richoferdinand@gmail.com",
+                      widget.dataPeminjaman.emailUser ?? "-",
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         color: Theme.of(context).colorScheme.primary,
@@ -92,7 +95,9 @@ class _CetakKartuPeminjamanScreenState
                   rowDetail(
                     label: "Tanggal Peminjaman",
                     value: Text(
-                      "18 Jan 2026",
+                      widget.dataPeminjaman.tanggalPeminjaman.toString().split(
+                        " ",
+                      )[0],
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         color: Theme.of(context).colorScheme.primary,
@@ -103,7 +108,9 @@ class _CetakKartuPeminjamanScreenState
                   rowDetail(
                     label: "Rencana Pengembalian",
                     value: Text(
-                      "19 Jan 2026",
+                      widget.dataPeminjaman.tanggalKembaliRencana
+                          .toString()
+                          .split(" ")[0],
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         color: Theme.of(context).colorScheme.primary,
@@ -115,22 +122,17 @@ class _CetakKartuPeminjamanScreenState
                     label: "Alat yang dipinjam",
                     value: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "1 iPad Pro M3",
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                        Text(
-                          "1 Stylus Pen",
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                      ],
+                      children: widget.dataPeminjaman.detailPeminjaman
+                          .map(
+                            (item) => Text(
+                              "x${item.jumlahPeminjaman} ${item.namaAlat}",
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                          )
+                          .toList(),
                     ),
                   ),
                 ],
@@ -145,16 +147,41 @@ class _CetakKartuPeminjamanScreenState
                 borderRadius: BorderRadius.circular(15),
               ),
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () async {
+                  final pdfData = await CetakKartuPeminjamanService.generate(
+                    kodePeminjaman: widget.dataPeminjaman.kodePeminjaman!,
+                    namaPeminjam: widget.dataPeminjaman.namaUser!,
+                    email: widget.dataPeminjaman.emailUser ?? "",
+                    tanggalPinjam: widget.dataPeminjaman.tanggalPeminjaman,
+                    tanggalKembali:
+                        widget.dataPeminjaman.tanggalKembaliRencana,
+                    daftarAlat: widget.dataPeminjaman.detailPeminjaman
+                        .map((e) => "x${e.jumlahPeminjaman} ${e.namaAlat}")
+                        .toList(),
+                  );
+
+                  await Printing.layoutPdf(onLayout: (_) async => pdfData);
+                },
+
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                 ),
-                child: Text(
-                  "Simpan",
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    color: Theme.of(context).colorScheme.onPrimary,
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.picture_as_pdf_outlined,
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                    SizedBox(width: 5),
+                    Text(
+                      "Cetak Kartu",
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

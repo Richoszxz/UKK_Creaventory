@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:creaventory/export.dart';
 
 class KonfirmasiPengembalianScreen extends StatefulWidget {
-  final Map<String, dynamic> dataPengembalian;
+  final ModelPengembalian dataPengembalian;
 
   const KonfirmasiPengembalianScreen({
     super.key,
@@ -16,12 +16,17 @@ class KonfirmasiPengembalianScreen extends StatefulWidget {
 
 class _KonfirmasiPengembalianScreenState
     extends State<KonfirmasiPengembalianScreen> {
+  final PengembalianService _pengembalianService = PengembalianService();
   final Color darkGreen = const Color(0xFF2D8154);
   final Color lightGreenBg = const Color(0xFFD4E7D7);
   final Color statusRed = const Color(0xFF822424);
 
+  late ModelPeminjaman peminjaman;
+  late List<ModelDetailPeminjaman> detailList;
+  late bool isTerlambat;
+
   // Map untuk menyimpan kondisi masing-masing alat (Key: Nama Alat)
-  late Map<String, String> kondisiAlat;
+  late Map<int, String> kondisiAlat;
 
   // Variabel harga denda per unit rusak
   final int hargaDendaRusak = 50000;
@@ -29,30 +34,36 @@ class _KonfirmasiPengembalianScreenState
   @override
   void initState() {
     super.initState();
-    // Inisialisasi kondisi awal dari list 'alat'
-    List alatList = widget.dataPengembalian['barang'] ?? [];
-    kondisiAlat = {for (var item in alatList) item['nama']: "Baik"};
+
+    peminjaman = widget.dataPengembalian.peminjaman!;
+    detailList = peminjaman.detailPeminjaman;
+
+    isTerlambat =
+        widget.dataPengembalian.totalDenda != null &&
+        widget.dataPengembalian.totalDenda! > 0;
+
+    kondisiAlat = {for (var d in detailList) d.idDetailPeminjaman: "baik"};
   }
 
   // --- LOGIKA HITUNG DENDA ---
   int _hitungDendaKerusakan() {
     int total = 0;
-    List alatList = widget.dataPengembalian['barang'] ?? [];
 
-    for (var item in alatList) {
-      if (kondisiAlat[item['nama']] == "Rusak") {
-        // Denda = jumlah barang (qty) * harga denda rusak
-        total += (item['qty'] as int) * hargaDendaRusak;
+    for (var item in detailList) {
+      if (kondisiAlat[item.idDetailPeminjaman] == "rusak") {
+        total += item.jumlahPeminjaman * hargaDendaRusak;
       }
     }
+
     return total;
+  }
+
+  String formatTanggal(DateTime date) {
+    return "${date.day}/${date.month}/${date.year}";
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool isTerlambat = widget.dataPengembalian['terlambat'] ?? false;
-    final List alatList = widget.dataPengembalian['barang'] ?? [];
-
     int hariTerlambat = isTerlambat ? 2 : 0;
     int dendaTerlambat = hariTerlambat * 5000;
     int dendaKerusakan = _hitungDendaKerusakan();
@@ -70,7 +81,7 @@ class _KonfirmasiPengembalianScreenState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildLabel("Kode Peminjaman"),
-            _buildTextField(widget.dataPengembalian['kode'] ?? "-"),
+            _buildTextField(peminjaman.kodePeminjaman ?? "-"),
 
             const SizedBox(height: 15),
             _buildLabel("Data Peminjam"),
@@ -80,14 +91,13 @@ class _KonfirmasiPengembalianScreenState
             _buildLabel("Daftar alat"),
 
             // LOOPING BERDASARKAN STRUKTUR DATA BARU
-            ...alatList
-                .map(
-                  (item) => _buildItemCard(
-                    item['nama'].toString(),
-                    item['qty'].toString(),
-                  ),
-                )
-                .toList(),
+            ...detailList.map(
+              (item) => _buildItemCard(
+                item.idDetailPeminjaman,
+                item.namaAlat,
+                item.jumlahPeminjaman,
+              ),
+            ),
 
             const SizedBox(height: 15),
             _buildLabel("Ringkasan Denda"),
@@ -125,7 +135,44 @@ class _KonfirmasiPengembalianScreenState
             height: double.infinity,
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () async {
+                try {
+                  final detailJson = widget
+                      .dataPengembalian
+                      .peminjaman!
+                      .detailPeminjaman
+                      .map(
+                        (item) => {
+                          "id_detail_peminjaman": item.idDetailPeminjaman,
+                          "kondisi_kembali":
+                              kondisiAlat[item.idDetailPeminjaman],
+                          "denda_kerusakan":
+                              kondisiAlat[item.idDetailPeminjaman] == "rusak"
+                              ? item.jumlahPeminjaman * 50000
+                              : 0,
+                        },
+                      )
+                      .toList();
+
+                  await _pengembalianService.konfirmasiPengembalian(
+                    idPengembalian: widget.dataPengembalian.idPengembalian,
+                    idPetugas: SupabaseService.client.auth.currentUser!.id,
+                    detailPengembalian: detailJson,
+                  );
+
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Pengembalian berhasil dikonfirmasi"),
+                    ),
+                  );
+                } catch (e) {
+                  debugPrint('$e');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Gagal konfirmasi: $e")),
+                  );
+                }
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
               ),
@@ -147,7 +194,7 @@ class _KonfirmasiPengembalianScreenState
 
   // --- KOMPONEN UI ---
 
-  Widget _buildItemCard(String namaAlat, String qty) {
+  Widget _buildItemCard(int idDetail, String namaAlat, int qty) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
@@ -194,7 +241,7 @@ class _KonfirmasiPengembalianScreenState
                       style: GoogleFonts.poppins(fontSize: 12),
                     ),
                     const SizedBox(width: 5),
-                    _buildDropdownKondisi(namaAlat),
+                    _buildDropdownKondisi(idDetail),
                   ],
                 ),
               ],
@@ -205,7 +252,7 @@ class _KonfirmasiPengembalianScreenState
     );
   }
 
-  Widget _buildDropdownKondisi(String namaAlat) {
+  Widget _buildDropdownKondisi(int idDetail) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       height: 25,
@@ -215,14 +262,14 @@ class _KonfirmasiPengembalianScreenState
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          value: kondisiAlat[namaAlat],
+          value: kondisiAlat[idDetail],
           dropdownColor: darkGreen,
           icon: const Icon(
             Icons.keyboard_arrow_down,
             color: Colors.white,
             size: 16,
           ),
-          items: ["Baik", "Rusak"]
+          items: ["baik", "rusak"]
               .map(
                 (val) => DropdownMenuItem(
                   value: val,
@@ -233,8 +280,13 @@ class _KonfirmasiPengembalianScreenState
                 ),
               )
               .toList(),
-          onChanged: (newVal) =>
-              setState(() => kondisiAlat[namaAlat] = newVal!),
+          onChanged: (newVal) {
+            if (newVal != null) {
+              setState(() {
+                kondisiAlat[idDetail] = newVal;
+              });
+            }
+          },
         ),
       ),
     );
@@ -252,26 +304,22 @@ class _KonfirmasiPengembalianScreenState
       ),
       child: Column(
         children: [
-          _infoRow(
-            Icons.person,
-            "Nama:",
-            widget.dataPengembalian['nama'] ?? "-",
-          ),
-          _infoRow(Icons.mail, "Email:", widget.dataPengembalian['email']),
+          _infoRow(Icons.person, "Nama:", peminjaman.namaUser ?? "-"),
+          _infoRow(Icons.mail, "Email:", peminjaman.emailUser ?? "-"),
           _infoRow(
             Icons.calendar_month,
             "Tanggal pinjam:",
-            widget.dataPengembalian['tglPinjam'] ?? "-",
+            formatTanggal(peminjaman.tanggalPeminjaman),
           ),
           _infoRow(
             Icons.calendar_month,
             "Rencana pengembalian:",
-            widget.dataPengembalian['tglRencanaPengembalian'],
+            formatTanggal(peminjaman.tanggalKembaliRencana),
           ),
           _infoRow(
             Icons.event_available,
             "Tanggal pengembalian:",
-            widget.dataPengembalian['tglPengembalian'] ?? "-",
+            formatTanggal(widget.dataPengembalian.tanggalKembaliAsli),
           ),
           Row(
             children: [

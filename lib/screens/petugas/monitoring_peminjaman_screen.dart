@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:creaventory/export.dart';
 import 'package:creaventory/widgets/card_request_peminjaman_widget.dart';
+import 'cetak_kartu_peminjaman_screen.dart';
 
 class MonitoringPeminjamanScreen extends StatefulWidget {
   const MonitoringPeminjamanScreen({super.key});
@@ -12,42 +13,36 @@ class MonitoringPeminjamanScreen extends StatefulWidget {
 
 class _MonitoringPeminjamanScreenState
     extends State<MonitoringPeminjamanScreen> {
-  final List<Map<String, dynamic>> requests = [
-    {
-      "kode": "TRX24578965",
-      "nama": "Richo Ferdinand",
-      "barang": "1 Tablet iPad, 1 Stylus Pen",
-    },
-    {
-      "kode": "TRX24578966",
-      "nama": "Richa Ferdinyoy",
-      "barang": "1 Kamera DSLR",
-    },
-  ];
-
   Future<List<ModelPeminjaman>> ambilDataPeminjaman() async {
     final result = await SupabaseService.client
         .from('peminjaman')
         .select('''
         *,
+        id_peminjaman,
+        id_user,
+        tanggal_peminjaman,
+        tanggal_kembali_rencana,
+        status_peminjaman,
+        kode_peminjaman,
         peminjam:pengguna!peminjaman_id_user_fkey (
-          username
+          username,
+          email
         ),
         detail_peminjaman (
-        id_detail_peminjaman,
-        id_peminjaman,
-        id_alat,
-        jumlah_peminjaman,
-        kondisi_awal,
-        kondisi_kembali,
-        denda_kerusakan,
-        alat (
-          nama_alat,
-          gambar_url,
-          kondisi_alat,
-          stok_alat
+          id_detail_peminjaman,
+          id_peminjaman,
+          id_alat,
+          jumlah_peminjaman,
+          kondisi_awal,
+          kondisi_kembali,
+          denda_kerusakan,
+          alat (
+            nama_alat,
+            gambar_url,
+            kondisi_alat,
+            stok_alat
+          )
         )
-      )
       ''')
         .eq('status_peminjaman', 'menunggu');
 
@@ -95,11 +90,19 @@ class _MonitoringPeminjamanScreenState
                         listPeminjaman.idPeminjaman,
                       );
 
-                      setState(() {});
-
                       AlertHelper.showSuccess(
                         context,
-                        'Berhasil menyetujui peminjaman !',
+                        'Berhasil menyetujui peminjaman !\ntekan "Ok" untuk mencetak kartu peminjaman',
+                        onOk: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CetakKartuPeminjamanScreen(
+                                dataPeminjaman: listPeminjaman,
+                              ),
+                            ),
+                          );
+                        },
                       );
                     } catch (e) {
                       debugPrint('$e');

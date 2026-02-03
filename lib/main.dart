@@ -88,7 +88,6 @@ class MyApp extends StatelessWidget {
         '/tambah_alat': (context) => const TambahAlatScreen(),
         '/tambah_kategori': (context) => TambahKategoriScreen(),
         '/edit_kategori': (context) => EditKategoriScreen(),
-        '/cetak_kartu_peminjaman': (context) => CetakKartuPeminjamanScreen(),
         '/keranjang_peminjaman': (context) => KeranjangPeminjamanScreen(),
         '/log_aktivitas': (context) => LogAktivitasScreen(),
         '/profil': (context) => ProfilScreen(),

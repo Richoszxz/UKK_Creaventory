@@ -149,15 +149,13 @@ class _KeranjangPeminjamanScreenState extends State<KeranjangPeminjamanScreen> {
 
                   _keranjangService.clear();
 
-                  if (!mounted) return;
+                  if (mounted) Navigator.pop(context);
 
                   AlertHelper.showSuccess(
                     context,
                     'Berhasil mengajukan peminjaman !',
                   );
-
-                  Navigator.pop(context);
-                } catch (e) {
+                } on Exception catch (e) {
                   debugPrint('$e');
                   AlertHelper.showError(
                     context,

@@ -60,7 +60,8 @@ class _TambahAlatScreenState extends State<TambahAlatScreen> {
       allowMultiple: false,
       withData: true,
     );
-
+    
+    // membedakan web atau mobile
     if (result != null && result.files.single.path != null) {
       setState(() {
         if (kIsWeb) {

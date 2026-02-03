@@ -216,7 +216,7 @@ class _EditDataPengembalianScreenState
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate:
-          tglKembali ?? widget.data.tanggalKembaliAsli ?? DateTime.now(),
+          tglKembali ?? widget.data.tanggalKembaliAsli,
       firstDate: DateTime(2020),
       lastDate: DateTime(2101),
     );

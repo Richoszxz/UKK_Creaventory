@@ -29,7 +29,7 @@ class _PengajuanPeminjamanScreenState extends State<PengajuanPeminjamanScreen> {
       setState(() {
         kategoriList = [
           "Semua",
-          ...(data ?? []).map((e) => e.namaKategori.toString()),
+          ...(data).map((e) => e.namaKategori.toString()),
         ];
       });
     } catch (e) {
@@ -161,7 +161,7 @@ class _PengajuanPeminjamanScreenState extends State<PengajuanPeminjamanScreen> {
                         const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2, // 2 kolom
                           crossAxisSpacing: 10,
-                          childAspectRatio: 0.69, // tinggi card
+                          childAspectRatio: 0.74, // tinggi card
                         ),
                     itemBuilder: (context, index) {
                       final alat = dataAlat[index];
@@ -179,7 +179,7 @@ class _PengajuanPeminjamanScreenState extends State<PengajuanPeminjamanScreen> {
                                     "id_alat": alat.idAlat,
                                     "nama": alat.namaAlat,
                                     "spesifikasi": alat.spesifikasiAlat,
-                                    "gambar": alat.gambarUrl
+                                    "gambar": alat.gambarUrl,
                                   });
                                 });
 
@@ -233,8 +233,9 @@ class _PengajuanPeminjamanScreenState extends State<PengajuanPeminjamanScreen> {
         clipBehavior: Clip.none,
         children: [
           FloatingActionButton(
-            onPressed: () =>
-                Navigator.of(context).pushNamed('/keranjang_peminjaman'),
+            onPressed: () => Navigator.of(
+              context,
+            ).pushNamed('/keranjang_peminjaman').then((_) => setState(() {})),
             backgroundColor: Theme.of(context).colorScheme.primary,
             child: const Icon(Icons.shopping_bag_outlined),
           ),

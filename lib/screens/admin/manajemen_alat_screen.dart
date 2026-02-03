@@ -158,7 +158,7 @@ class _ManajemenAlatScreenState extends State<ManajemenAlatScreen> {
                         const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2, // 2 kolom
                           crossAxisSpacing: 10,
-                          childAspectRatio: .73, // tinggi card
+                          childAspectRatio: .69, // tinggi card
                         ),
                     itemBuilder: (context, index) {
                       final alat = dataAlat[index];

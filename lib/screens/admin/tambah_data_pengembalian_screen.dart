@@ -105,7 +105,7 @@ class _TambahDataPengembalianScreenState
       final userId = SupabaseService.client.auth.currentUser!.id;
 
       // 1️⃣ insert pengembalian
-      final pengembalian = await SupabaseService.client
+      await SupabaseService.client
           .from('pengembalian')
           .insert({
             'id_peminjaman': selectedIdPeminjaman,

@@ -12,22 +12,27 @@ class PengajuanPengembalianScreen extends StatefulWidget {
 
 class _PengajuanPengembalianScreenState
     extends State<PengajuanPengembalianScreen> {
+  final PengembalianService _pengembalianService = PengembalianService();
   TextEditingController catatanController = TextEditingController();
 
   Map<String, String> kondisiPerAlat = {};
 
-  final List<String> opsiKondisi = ["Baik", "Rusak Ringan", "Rusak Berat"];
+  final List<String> opsiKondisi = ["baik", "rusak"];
 
   @override
   void initState() {
     super.initState();
-    for (var alat in widget.peminjaman["alat"]) {
-      kondisiPerAlat[alat["nama"]] = opsiKondisi[0]; // default "Baik"
+    final detail = widget.peminjaman['detail_peminjaman'] as List<dynamic>;
+
+    for (var d in detail) {
+      kondisiPerAlat[d['alat']['nama_alat']] = opsiKondisi[0];
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final detail = widget.peminjaman['detail_peminjaman'] as List<dynamic>;
+
     return Scaffold(
       appBar: AppBarWidget(
         judulAppBar: "Pengajuan\nPengembalian",
@@ -39,7 +44,7 @@ class _PengajuanPengembalianScreenState
           children: [
             // ================= KODE TRANSAKSI =================
             _label("Kode Peminjaman"),
-            _readonlyField(widget.peminjaman["kode"]),
+            _readonlyField(widget.peminjaman["kode_peminjaman"]),
 
             const SizedBox(height: 15),
 
@@ -47,12 +52,15 @@ class _PengajuanPengembalianScreenState
             _label("Daftar Alat"),
             const SizedBox(height: 6),
 
-            ...widget.peminjaman["alat"].map<Widget>((alat) {
+            ...detail.map((item) {
               return Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: _alatItem(alat),
+                padding: EdgeInsets.only(bottom: 10),
+                child: _alatItem({
+                  'nama': item['alat']['nama_alat'],
+                  'qty': item['jumlah_peminjaman'],
+                }),
               );
-            }).toList(),
+            }),
 
             const SizedBox(height: 15),
 
@@ -90,7 +98,27 @@ class _PengajuanPengembalianScreenState
             height: double.infinity,
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () async {
+                try {
+                  final idPeminjaman = widget.peminjaman['id_peminjaman'];
+
+                  await _pengembalianService.ajukanPengembalian(
+                    id_peminjaman: idPeminjaman,
+                  );
+
+                  if (mounted) Navigator.pop(context);
+                  AlertHelper.showSuccess(
+                    context,
+                    'Berhasil mengajukan peminjaman, silahkan menemui laboran !',
+                  );
+                } catch (e) {
+                  debugPrint('$e');
+                  AlertHelper.showError(
+                    context,
+                    'Gagal mengajukan peminjaman !',
+                  );
+                }
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
               ),

@@ -29,7 +29,8 @@ class _MonitoringPengembalianScreenState
           status_peminjaman,
           kode_peminjaman,
           peminjam:pengguna!peminjaman_id_user_fkey (
-                    username
+                    username,
+                    email
                   ),
           detail_peminjaman (
           id_detail_peminjaman,
@@ -51,17 +52,15 @@ class _MonitoringPengembalianScreenState
         .isFilter('dikonfirmasi_oleh', null)
         .order('created_at', ascending: false);
 
-    // Pastikan result adalah List<Map<String,dynamic>>
-    if (result is List) {
-      return result
-          .map(
-            (item) => ModelPengembalian.fromJson(item as Map<String, dynamic>),
-          )
-          .toList();
-    }
+    debugPrint("Result type: ${result.runtimeType}");
+    debugPrint("Result content: $result");
 
-    // Jika bukan list, kembalikan list kosong
-    return [];
+    // Pastikan result adalah List<Map<String,dynamic>>
+    return result
+        .map(
+          (item) => ModelPengembalian.fromJson(item),
+        )
+        .toList();
   }
 
   String formatTanggal(DateTime date) {
@@ -114,6 +113,16 @@ class _MonitoringPengembalianScreenState
                       )
                       .join(', '),
                   terlambat: listPengembalian.totalDenda! > 0,
+                  aksiVerifikasiPengembalian: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => KonfirmasiPengembalianScreen(
+                          dataPengembalian: listPengembalian,
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             );

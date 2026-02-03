@@ -4,6 +4,7 @@ class ModelPeminjaman {
   final int idPeminjaman;
   final String idUser;
   final String? namaUser;
+  final String? emailUser;
   final DateTime tanggalPeminjaman;
   final DateTime tanggalKembaliRencana;
   final String statusPeminjaman;
@@ -19,6 +20,7 @@ class ModelPeminjaman {
     required this.idPeminjaman,
     required this.idUser,
     this.namaUser,
+    this.emailUser,
     required this.tanggalPeminjaman,
     required this.tanggalKembaliRencana,
     required this.statusPeminjaman,
@@ -35,6 +37,7 @@ class ModelPeminjaman {
       idPeminjaman: map['id_peminjaman'],
       idUser: map['id_user'],
       namaUser: map['peminjam'] != null ? map['peminjam']['username'] : null,
+      emailUser: map['peminjam'] != null ? map['peminjam']['email'] : null,
       tanggalPeminjaman: DateTime.parse(map['tanggal_peminjaman']),
       tanggalKembaliRencana: DateTime.parse(map['tanggal_kembali_rencana']),
       statusPeminjaman: map['status_peminjaman'],

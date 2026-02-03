@@ -93,9 +93,7 @@ class _ManajemenDataPengembalianScreenState
                         child: CardDataPengembalianWidget(
                           kode: peminjaman?.kodePeminjaman ?? '-',
                           nama: peminjaman!.namaUser!,
-                          tglPinjam: peminjaman?.tanggalPeminjaman != null
-                              ? formatTanggal(peminjaman!.tanggalPeminjaman)
-                              : "-",
+                          tglPinjam: formatTanggal(peminjaman!.tanggalPeminjaman),
                           tglKembali: formatTanggal(
                             listDataPengembalian.tanggalKembaliAsli,
                           ),

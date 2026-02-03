@@ -1,6 +1,4 @@
 import 'package:creaventory/export.dart';
-import 'package:flutter/cupertino.dart';
-import 'keranjang_service.dart';
 
 class PeminjamanService {
   final _client = SupabaseService.client;
@@ -160,16 +158,6 @@ class PeminjamanService {
       'petugas_menyetujui_peminjaman',
       params: {
         'p_id_peminjaman': idPeminjaman,
-        'p_petugas': _client.auth.currentUser?.id,
-      },
-    );
-  }
-
-  Future<void> konfirmasiPengembalian(int idPengembalian) async {
-    await _client.rpc(
-      'konfirmasi_pengembalian',
-      params: {
-        'p_id_pengembalian': idPengembalian,
         'p_petugas': _client.auth.currentUser?.id,
       },
     );

@@ -21,7 +21,8 @@ class PengembalianService {
           status_peminjaman,
           kode_peminjaman,
           peminjam:pengguna!peminjaman_id_user_fkey (
-                    username
+                    username,
+                    email
                   ),
           detail_peminjaman (
           id_detail_peminjaman,
@@ -47,16 +48,7 @@ class PengembalianService {
     debugPrint("Result content: $result");
 
     // Pastikan result adalah List<Map<String,dynamic>>
-    if (result is List) {
-      return result
-          .map(
-            (item) => ModelPengembalian.fromJson(item as Map<String, dynamic>),
-          )
-          .toList();
-    }
-
-    // Jika bukan list, kembalikan list kosong
-    return [];
+    return result.map((item) => ModelPengembalian.fromJson(item)).toList();
   }
 
   Future<void> hapusPengembalian(int idPengembalian) async {
@@ -64,5 +56,31 @@ class PengembalianService {
         .from('pengembalian')
         .delete()
         .eq('id_pengembalian', idPengembalian);
+  }
+
+  Future<void> ajukanPengembalian({required int id_peminjaman}) async {
+    await _client.rpc(
+      'peminjam_mengajukan_pengembalian',
+      params: {'p_id_peminjaman': id_peminjaman},
+    );
+  }
+
+  Future<void> konfirmasiPengembalian({
+    required int idPengembalian,
+    required String idPetugas,
+    required List<Map<String, dynamic>> detailPengembalian,
+  }) async {
+    try {
+      await SupabaseService.client.rpc(
+        'petugas_konfirmasi_pengembalian',
+        params: {
+          'p_id_pengembalian': idPengembalian,
+          'p_id_petugas': idPetugas,
+          'p_detail': detailPengembalian,
+        },
+      );
+    } catch (e) {
+      throw Exception('Gagal $e');
+    }
   }
 }
